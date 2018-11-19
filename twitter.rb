@@ -3,7 +3,6 @@
 #
 
 require 'twitter'
-require 'natto'
 require 'net/https'
 require 'uri'
 require 'json'
@@ -20,7 +19,7 @@ TWITTER_COMSUMER_SECRET = 'xxx'
 TWITTER_ACCESS_TOKEN_SECRET = 'xxx'
 TWITTER_ACCESS_TOKEN = 'xxx'
 
-PROXY_HOST = 'proxy.example.co.jp'
+PROXY_HOST = 'proxy2.example.co.jp'
 PROXY_PORT = 8080
 PROXY_USERNAME = 'xxx'
 PROXY_PASSWORD = 'xxx'
@@ -80,21 +79,23 @@ module Emoemo
       request['Content-Type'] = "application/json"
       request['X-Api-Key'] = MACERELIO_APIKEY
 
+      documents ||= []
       tweets.each_with_index {|tweet, index|
         epoch_time = Time.parse(tweet["created_at"]).strftime('%s').to_i
-        documents = [{
+        documents << {
             'name' => 'emotion',
             'time' => epoch_time,
             'value' => scores[index]
-        }]
-        request.body = documents.to_json
-  
-        response = Net::HTTP.start(@uri.host, @uri.port, :use_ssl => @uri.scheme == 'https') do |http|
-            http.request (request)
-        end
-
+        }
         @cache.update_tweet(tweet["id"], Time.at(epoch_time), tweet["text"], scores[index].to_s)
       }
+
+      request.body = documents.to_json
+      response = Net::HTTP.start(@uri.host, @uri.port, :use_ssl => @uri.scheme == 'https') do |http|
+          http.request (request)
+      end
+      # pp response
+
     end
   end # Mackerelio
 
@@ -166,10 +167,10 @@ module Emoemo
     def get_tweet(username)
       t ||= []
       @client.user_timeline(username).each {|tweet|
-        puts tweet.created_at
-        puts tweet.text
-        puts tweet.user.screen_name
-        puts tweet.id
+        # puts tweet.created_at
+        # puts tweet.text
+        # puts tweet.user.screen_name
+        # puts tweet.id
         t << {"id" => tweet.id, "created_at" => tweet.created_at.to_s, "text" => tweet.text}
       }
       return t
@@ -177,14 +178,14 @@ module Emoemo
 
     def get_new_tweets(username)
       now_tweets = get_tweet(username)
-      puts "now_tweets:"
-      pp now_tweets
-      puts ""
+      # puts "now_tweets:"
+      # pp now_tweets
+      # puts ""
 
       new_tweets = @cache.find_new_tweets(now_tweets)
-      puts "new_tweets:"
-      pp new_tweets
-      puts ""
+      # puts "new_tweets:"
+      # pp new_tweets
+      # puts ""
 
       return new_tweets
     end
