@@ -3,6 +3,7 @@
 #
 
 require 'twitter'
+require 'natto'
 require 'net/https'
 require 'uri'
 require 'json'
@@ -59,9 +60,9 @@ module Emoemo
       @db.execute("update tweet set created_at='#{created_at}', score=#{score} where id=#{id}")
     end
 
-    def dump()
+    def dump(order: 'score')
       # レコードを取得する
-      @db.execute( "select * from tweet" ) do |row|
+      @db.execute( "select * from tweet order by #{order} desc") do |row|
         p row
       end
     end
@@ -166,7 +167,8 @@ module Emoemo
 
     def get_tweet(username)
       t ||= []
-      @client.user_timeline(username).each {|tweet|
+      options = {count: 200}
+      @client.user_timeline(username, options).each {|tweet|
         # puts tweet.created_at
         # puts tweet.text
         # puts tweet.user.screen_name
