@@ -20,10 +20,10 @@ TWITTER_COMSUMER_SECRET = 'xxx'
 TWITTER_ACCESS_TOKEN_SECRET = 'xxx'
 TWITTER_ACCESS_TOKEN = 'xxx'
 
-PROXY_HOST = 'proxy2.example.co.jp'
-PROXY_PORT = 8080
-PROXY_USERNAME = 'xxx'
-PROXY_PASSWORD = 'xxx'
+# PROXY_HOST = 'proxy2.example.co.jp'
+# PROXY_PORT = 8080
+# PROXY_USERNAME = 'xxx'
+# PROXY_PASSWORD = 'xxx'
 
 
 module Emoemo
@@ -95,8 +95,6 @@ module Emoemo
       response = Net::HTTP.start(@uri.host, @uri.port, :use_ssl => @uri.scheme == 'https') do |http|
           http.request (request)
       end
-      # pp response
-
     end
   end # Mackerelio
 
@@ -132,7 +130,6 @@ module Emoemo
       json["documents"].each {|doc|
         scores << doc["score"]
       }
-      pp scores
       return scores
     end
   end # class TextAnalyzer
@@ -141,12 +138,12 @@ module Emoemo
     def initialize(cache)
       @cache = cache
 
-      proxy = {
-        host: PROXY_HOST,
-        port: PROXY_PORT,
-        username: PROXY_USERNAME,
-        password: PROXY_PASSWORD
-      }
+      # proxy = {
+      #   host: PROXY_HOST,
+      #   port: PROXY_PORT,
+      #   username: PROXY_USERNAME,
+      #   password: PROXY_PASSWORD
+      # }
 
       # ログイン
       @client = Twitter::REST::Client.new do |config|
@@ -154,7 +151,7 @@ module Emoemo
         config.consumer_secret = TWITTER_COMSUMER_SECRET
         config.access_token_secret = TWITTER_ACCESS_TOKEN_SECRET
         config.access_token = TWITTER_ACCESS_TOKEN
-        config.proxy = proxy
+        # config.proxy = proxy
       end 
     end
 
@@ -169,10 +166,7 @@ module Emoemo
       t ||= []
       options = {count: 200}
       @client.user_timeline(username, options).each {|tweet|
-        # puts tweet.created_at
-        # puts tweet.text
-        # puts tweet.user.screen_name
-        # puts tweet.id
+        next if tweet.text =~ /\ART/
         t << {"id" => tweet.id, "created_at" => tweet.created_at.to_s, "text" => tweet.text}
       }
       return t
@@ -180,15 +174,7 @@ module Emoemo
 
     def get_new_tweets(username)
       now_tweets = get_tweet(username)
-      # puts "now_tweets:"
-      # pp now_tweets
-      # puts ""
-
       new_tweets = @cache.find_new_tweets(now_tweets)
-      # puts "new_tweets:"
-      # pp new_tweets
-      # puts ""
-
       return new_tweets
     end
 
