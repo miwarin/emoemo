@@ -66,7 +66,7 @@ module Emoemo
         p row
       end
     end
-
+    
   end # class ECache
   
   class Mackerelio
@@ -201,6 +201,11 @@ module Emoemo
     def show_score()
       @cache.dump()
     end
+
+    def show_timeline()
+      @cache.dump(order: 'created_at')
+    end
+
   end # class Emoemo
 end # module Emoemo
 
@@ -209,7 +214,11 @@ def main(argv)
   if argv.length == 0
     emo.analyze()
   else
-    emo.show_score()
+    if argv[0] =~ /^[sS]/
+      emo.show_score()
+    else
+      emo.show_timeline()
+    end
   end
 end
 
