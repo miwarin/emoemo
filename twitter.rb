@@ -3,7 +3,6 @@
 #
 
 require 'twitter'
-require 'natto'
 require 'net/https'
 require 'uri'
 require 'json'
